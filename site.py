@@ -14,25 +14,26 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # --- Configuration ---
-DEFAULT_CSV_PATH = 'all_nodes_merged.csv'  # Dataset to be pre-loaded
+DEFAULT_CSV_PATH = 'all_nodes.csv'  # Dataset to be pre-loaded
 # EDGES_CSV_PATH = 'all_edges.csv' # Edges file -- REMOVED
 FIXED_TSNE_PERPLEXITY = 30.0
 MAX_CATEGORIES_TO_HIGHLIGHT = 3
 HIGHLIGHT_COLORS = px.colors.qualitative.Plotly[:MAX_CATEGORIES_TO_HIGHLIGHT]
 DEFAULT_POINT_COLOR = 'lightgrey'
-HIGHLIGHT_POINT_SIZE = 7
-DEFAULT_POINT_SIZE = 4
+HIGHLIGHT_POINT_SIZE = 6  # Adjusted size
+DEFAULT_POINT_SIZE = 3  # Adjusted size
 # EDGE_COLOR = "rgba(100,100,100,0.15)" # REMOVED
 # EDGE_WIDTH = 0.5 # REMOVED
 
 # Predefined order for 'age_group' or similar ordinal categories
 AGE_GROUP_ORDER = [
-    '0-17', '18-24', '18-25', '25-29',
-    '26-35', '30-39', '35-44', '36-45',
-    '40-49', '45-54', '46-55', '50-59',
-    '55-64', '56-65', '56+', '60-69', '60+',
-    '65+', '65 or older', '70+',
-    'Unknown', 'Not Specified'
+    '0-30',
+    '30-40',
+    '40-50',
+    '50-60',
+    '60-70',
+    '70-80',
+    '80-90',
 ]
 
 # --- Load Initial Data ---
@@ -48,8 +49,11 @@ try:
     AVAILABLE_COLS_FOR_HIGHLIGHT_FEATURE = [col for col in GLOBAL_DF.columns if
                                             col not in POTENTIAL_COLS_TO_DROP_FROM_SELECTION]
     HIGHLIGHT_FEATURE_DROPDOWN_OPTIONS = [{'label': col, 'value': col} for col in AVAILABLE_COLS_FOR_HIGHLIGHT_FEATURE]
+    # Ensure 'point_size_col' (or similar if named differently in plot_df) is not in hover data
     ORIGINAL_COLUMNS_FOR_HOVER = [col for col in GLOBAL_DF.columns if
-                                  col.lower() not in ['id', 'file', 'point_size_col', 'point_size']]
+                                  col.lower() not in ['id', 'file', 'point_size_col', 'point_size',
+                                                      'display_color_group']]
+
 
 except FileNotFoundError:
     INITIAL_STATUS_MESSAGE = f"Error: Default node file '{DEFAULT_CSV_PATH}' not found. Please place it in the same directory as the app."
@@ -70,6 +74,7 @@ app.layout = html.Div(
 
         html.Div(id='initial-load-status', children=INITIAL_STATUS_MESSAGE,
                  style={'display': 'block' if INITIAL_STATUS_MESSAGE.strip() else 'none',
+                        # Only show if there's a non-empty message
                         'marginTop': '10px', 'fontWeight': 'bold',
                         'color': 'red' if 'Error' in INITIAL_STATUS_MESSAGE else (
                             'orange' if 'Warning' in INITIAL_STATUS_MESSAGE or 'Info' in INITIAL_STATUS_MESSAGE else 'green'),
@@ -123,7 +128,7 @@ app.layout = html.Div(
 
         dcc.Loading(id="loading-spinner", type="circle", children=[
             html.Div(id='tsne-plot-div', children=[
-                dcc.Graph(id='tsne-scatter-plot', figure=go.Figure())
+                dcc.Graph(id='tsne-scatter-plot', figure=go.Figure())  # Initialize with an empty figure
             ]),
         ]),
 
@@ -160,7 +165,7 @@ def update_category_selector(selected_feature, df_json):
         unique_categories = df[selected_feature].astype(str).fillna('Unknown').unique()
 
         column_name_normalized = df[selected_feature].name.lower().replace("_", " ")
-        if 'age group' in column_name_normalized:  # Corrected check
+        if 'age group' in column_name_normalized:
             temp_df = pd.DataFrame({'category': unique_categories})
             temp_df['ordered_category'] = pd.Categorical(temp_df['category'], categories=AGE_GROUP_ORDER, ordered=True)
             unique_categories = temp_df.sort_values('ordered_category')['category'].tolist()
@@ -198,7 +203,7 @@ def update_weight_label(value):
 def run_tsne_and_plot(n_clicks, df_json, highlight_feature_for_weighting, selected_categories_to_highlight,
                       weight_multiplier, original_columns_for_hover):
     if n_clicks == 0:
-        return go.Figure(), ""
+        return go.Figure(), ""  # Return empty figure, no message
 
     if GLOBAL_DF.empty:
         return go.Figure(), f"Error: Could not load node data from '{DEFAULT_CSV_PATH}'. Plotting is not possible."
@@ -277,17 +282,20 @@ def run_tsne_and_plot(n_clicks, df_json, highlight_feature_for_weighting, select
 
     plot_df = pd.DataFrame(reduced_data, columns=['t-SNE_1', 't-SNE_2'])
 
+    # Add original columns for hover data, using the index from features_to_process to align
     temp_hover_df = df_full.loc[features_to_process.index].reset_index(drop=True)
-    for col_for_hover in original_columns_for_hover:
+    for col_for_hover in original_columns_for_hover:  # These are pre-filtered
         if col_for_hover in temp_hover_df.columns:
             plot_df[col_for_hover] = temp_hover_df[col_for_hover]
 
     fig_title = f't-SNE Dimensionality Reduction (Perplexity: {FIXED_TSNE_PERPLEXITY})'
     color_discrete_map = {}
     plot_df['display_color_group'] = 'Other Points'
-    plot_df['point_size_col'] = DEFAULT_POINT_SIZE
+    plot_df['point_size_col'] = DEFAULT_POINT_SIZE  # This column controls point size
 
     actual_categories_to_highlight = []
+    category_order_for_legend = ['Other Points']
+
     if highlight_feature_for_weighting and selected_categories_to_highlight and \
             highlight_feature_for_weighting in temp_hover_df.columns and \
             (pd.api.types.is_object_dtype(temp_hover_df[highlight_feature_for_weighting]) or \
@@ -296,44 +304,63 @@ def run_tsne_and_plot(n_clicks, df_json, highlight_feature_for_weighting, select
         actual_categories_to_highlight = selected_categories_to_highlight[:MAX_CATEGORIES_TO_HIGHLIGHT]
         feature_series_for_mask = temp_hover_df[highlight_feature_for_weighting].astype(str)
 
+        # Determine legend order for highlighted categories
+        temp_highlight_feature_name_norm = highlight_feature_for_weighting.lower().replace("_", " ")
+        if 'age group' in temp_highlight_feature_name_norm:
+            # Filter AGE_GROUP_ORDER to only include the selected highlighted categories
+            ordered_selection = [cat for cat in AGE_GROUP_ORDER if cat in actual_categories_to_highlight]
+            category_order_for_legend.extend(ordered_selection)
+            # Add any selected categories not in AGE_GROUP_ORDER (shouldn't happen if dropdown is sourced correctly)
+            # and ensure they are unique before adding
+            remaining_selected = sorted(list(set(actual_categories_to_highlight) - set(ordered_selection)))
+            category_order_for_legend.extend(remaining_selected)
+
+        else:
+            category_order_for_legend.extend(sorted(actual_categories_to_highlight))
+
         for i, category_val in enumerate(actual_categories_to_highlight):
-            mask = (feature_series_for_mask == str(category_val)).values
-            plot_df.loc[mask, 'display_color_group'] = str(category_val)
-            plot_df.loc[mask, 'point_size_col'] = HIGHLIGHT_POINT_SIZE
-            color_discrete_map[str(category_val)] = HIGHLIGHT_COLORS[i % len(HIGHLIGHT_COLORS)]
+            original_index_mask = (feature_series_for_mask == str(category_val))
+            aligned_mask = original_index_mask.values
+            plot_df.loc[aligned_mask, 'display_color_group'] = str(category_val)
+            plot_df.loc[aligned_mask, 'point_size_col'] = HIGHLIGHT_POINT_SIZE
+            try:
+                legend_pos = category_order_for_legend.index(str(category_val)) - 1
+                if legend_pos >= 0:
+                    color_discrete_map[str(category_val)] = HIGHLIGHT_COLORS[legend_pos % len(HIGHLIGHT_COLORS)]
+                else:
+                    color_discrete_map[str(category_val)] = HIGHLIGHT_COLORS[i % len(HIGHLIGHT_COLORS)]
+            except ValueError:
+                color_discrete_map[str(category_val)] = HIGHLIGHT_COLORS[i % len(HIGHLIGHT_COLORS)]
 
         fig_title += f'<br>Highlighting: {", ".join(actual_categories_to_highlight)} from {highlight_feature_for_weighting}'
         if highlight_feature_for_weighting in original_categorical_cols or highlight_feature_for_weighting in original_numerical_cols:
             fig_title += f' (Weighted by {weight_multiplier}x)'
 
     color_discrete_map['Other Points'] = DEFAULT_POINT_COLOR
+
+    # Ensure hover_data list only contains columns that actually exist in plot_df
     valid_hover_cols = [col for col in original_columns_for_hover if col in plot_df.columns]
+
+    # Prepare hover_data dictionary to explicitly exclude aesthetics columns
+    hover_data_config = {col: True for col in valid_hover_cols}
+    # Explicitly disable hover for columns used purely for aesthetics if they are not in valid_hover_cols
+    # or if we want to be absolutely sure they don't appear.
+    if 'point_size_col' in plot_df.columns:
+        hover_data_config['point_size_col'] = False
+    if 'display_color_group' in plot_df.columns:
+        hover_data_config['display_color_group'] = False
 
     fig = px.scatter(
         plot_df, x='t-SNE_1', y='t-SNE_2',
         color='display_color_group',
         size='point_size_col',
         title=fig_title,
-        hover_data=valid_hover_cols,
+        hover_data=hover_data_config,  # Use the configured dictionary
         color_discrete_map=color_discrete_map,
-        category_orders={'display_color_group': ['Other Points'] + sorted(actual_categories_to_highlight)}
+        category_orders={'display_color_group': category_order_for_legend}
     )
 
-    # Add Edges -- REMOVED
-    # shapes = []
-    # id_to_coords_map = {}
-    # if not EDGES_DF.empty and 'id' in plot_df.columns:
-    #     mapping_df = plot_df.drop_duplicates(subset=['id'], keep='first').set_index('id')
-    #     id_to_coords_map = mapping_df[['t-SNE_1', 't-SNE_2']].to_dict('index')
-    #     for _, edge_row in EDGES_DF.iterrows():
-    #         id1, id2 = edge_row['id1'], edge_row['id2']
-    #         coords1 = id_to_coords_map.get(id1)
-    #         coords2 = id_to_coords_map.get(id2)
-    #         if coords1 and coords2:
-    #             shapes.append(go.layout.Shape(...))
-
     fig.update_layout(
-        # shapes=shapes, # REMOVED
         margin=dict(l=20, r=20, t=100, b=20),
         height=700,
         xaxis_title="t-SNE Component 1",
