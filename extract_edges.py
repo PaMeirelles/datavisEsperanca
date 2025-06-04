@@ -10,6 +10,8 @@ for filename in os.listdir(FOLDER):
         path = os.path.join(FOLDER, filename)
         with open(path, "rb") as f:
             G = pickle.load(f)
+            edge = G[73553]
+            print(edge)
         for u, v in G.edges():
             rows.append({"id1": u, "id2": v})
 
