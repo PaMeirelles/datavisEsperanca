@@ -5,7 +5,8 @@ from scipy.optimize import minimize
 import time
 import os
 
-# --- Helper Functions from the original script ---
+
+# --- Helper Functions from the original script (unchanged) ---
 
 def preprocess_and_calculate_distances(df, weighted_feature=None, weight_value=1.0):
     """
@@ -23,13 +24,15 @@ def preprocess_and_calculate_distances(df, weighted_feature=None, weight_value=1
                 low, high = map(int, age_group.split('-'))
                 return (low + high) / 2
             return 0
+
         df_features['age_group'] = df_features['age_group'].apply(age_group_to_numeric)
 
     categorical_cols = df_features.select_dtypes(include=['object']).columns
     df_encoded = pd.get_dummies(df_features, columns=categorical_cols)
 
     if weighted_feature:
-        print(f"Applying weight {weight_value} to the '{weighted_feature}' feature...")
+        # A small print statement here is useful for monitoring
+        # print(f"Applying weight {weight_value} to the '{weighted_feature}' feature...")
         for col in df_encoded.columns:
             # Apply weight to all one-hot encoded columns derived from the feature
             if col.startswith(weighted_feature):
@@ -68,79 +71,87 @@ def circular_objective_function(angles, distance_matrix):
     squared_diff = (norm_dist_circ - norm_dist_atr) ** 2
     return np.sum(np.triu(squared_diff, 1))
 
+
 # --- Main Pre-calculation Logic ---
 
 def run_precalculation():
     """
     Main function to run the analysis for all features and weights.
+    Saves results incrementally to allow for interruption and resumption.
     """
     # --- Configuration ---
-    SAMPLE_FRACTION = 0.05
-    WEIGHT_VALUES = [10.0, 100.0, 1000.0]
+    SAMPLE_FRACTION = 1
+    WEIGHT_VALUES = [100.0, 200.0, 400.0]
+    INPUT_FILENAME = 'all_nodes.csv'
     OUTPUT_FILENAME = 'precalculated_coordinates.csv'
 
     print("--- Starting Pre-calculation ---")
 
     # --- Load and Sample Data ---
     try:
-        df_full = pd.read_csv('all_nodes.csv')
-        print(f"Loaded {len(df_full)} total nodes.")
+        df_full = pd.read_csv(INPUT_FILENAME)
+        print(f"Loaded {len(df_full)} total nodes from '{INPUT_FILENAME}'.")
     except FileNotFoundError:
-        print("\nError: Could not find 'all_nodes.csv'. Please ensure it's in the correct directory.")
+        print(f"\nError: Could not find '{INPUT_FILENAME}'. Please ensure it's in the correct directory.")
         return
 
-    # Sample the nodes once to ensure consistency across all runs
     df_sample = df_full.sample(frac=SAMPLE_FRACTION, random_state=42).copy()
     print(f"Sampled {len(df_sample)} nodes for analysis ({SAMPLE_FRACTION * 100}% of total).")
 
-    # Identify feature columns to iterate over
     feature_columns = [col for col in df_sample.columns if col not in ['id', 'file']]
     print(f"Identified features for analysis: {feature_columns}\n")
 
+    # --- MODIFICATION 1: Check for existing results to avoid re-calculating ---
+    completed_runs = set()
+    if os.path.exists(OUTPUT_FILENAME):
+        print(f"Found existing results file: '{OUTPUT_FILENAME}'. Reading to prevent re-work.")
+        df_existing = pd.read_csv(OUTPUT_FILENAME)
+        for _, row in df_existing.iterrows():
+            completed_runs.add((row['weighted_feature'], row['weight']))
+        print(f"Loaded {len(completed_runs)} previously completed runs.")
+
     # --- Main Loop ---
-    all_results = []
     total_runs = len(feature_columns) * len(WEIGHT_VALUES)
-    current_run = 0
+    current_run_number = 0
 
     for feature in feature_columns:
         for weight in WEIGHT_VALUES:
-            current_run += 1
-            print(f"--- Running Analysis {current_run}/{total_runs} ---")
-            print(f"Weighted Feature: '{feature}', Weight: {weight}")
+            current_run_number += 1
+            print(f"--- Preparing Analysis {current_run_number}/{total_runs} ---")
+
+            # --- MODIFICATION 2: Skip this loop iteration if the result already exists ---
+            if (feature, weight) in completed_runs:
+                print(f"Skipping: Feature '{feature}', Weight {weight} already calculated.\n")
+                continue
+
+            print(f"Running for: Weighted Feature '{feature}', Weight: {weight}")
             start_time = time.time()
 
-            # 1. Preprocess data and calculate weighted distance matrix
             distance_matrix = preprocess_and_calculate_distances(
                 df=df_sample,
                 weighted_feature=feature,
                 weight_value=weight
             )
-
-            # 2. Create a warm start solution based on the feature being weighted
             initial_angles = create_warm_start_angles(
                 df_processed=df_sample,
                 warm_start_category=feature,
-                spread_radians=0.4
+                spread_radians=0.1
             )
-
-            # 3. Run the optimization
             result = minimize(
                 fun=circular_objective_function,
                 x0=initial_angles,
                 args=(distance_matrix,),
                 method='L-BFGS-B',
                 bounds=[(0, 2 * np.pi)] * len(df_sample),
-                options={'disp': False, 'maxiter': 5000} # disp=False for cleaner output
+                options={'disp': False, 'maxiter': 5000}
             )
 
             if result.success:
-                # 4. Calculate Cartesian coordinates from optimized angles
                 final_angles = result.x
                 radius = 1.0
                 x_coords = radius * np.cos(final_angles)
                 y_coords = radius * np.sin(final_angles)
 
-                # 5. Store results
                 run_results = pd.DataFrame({
                     'id': df_sample['id'],
                     'weighted_feature': feature,
@@ -148,20 +159,25 @@ def run_precalculation():
                     'x': x_coords,
                     'y': y_coords
                 })
-                all_results.append(run_results)
+
+                # --- MODIFICATION 3: Append results immediately to the CSV file ---
+                # Determine if the header should be written (only for the very first time)
+                write_header = not os.path.exists(OUTPUT_FILENAME)
+
+                run_results.to_csv(OUTPUT_FILENAME, mode='a', header=write_header, index=False)
+
+                print(f"SUCCESS: Results saved to '{OUTPUT_FILENAME}'.")
                 print(f"Completed in {time.time() - start_time:.2f} seconds.\n")
+
             else:
                 print(f"Optimization failed for feature '{feature}' with weight {weight}.\n")
 
-
-    # --- Save Final Results ---
-    if all_results:
-        final_df = pd.concat(all_results, ignore_index=True)
-        final_df.to_csv(OUTPUT_FILENAME, index=False)
-        print(f"--- Pre-calculation complete. ---")
-        print(f"Results for {len(final_df)} data points saved to '{OUTPUT_FILENAME}'.")
+    # --- MODIFICATION 4: Final message is updated as saving is now incremental ---
+    print(f"--- Pre-calculation process finished. ---")
+    if os.path.exists(OUTPUT_FILENAME):
+        print(f"All results are stored in '{OUTPUT_FILENAME}'.")
     else:
-        print("--- Pre-calculation finished with no successful runs. ---")
+        print("No successful runs were completed.")
 
 
 if __name__ == '__main__':

@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 NODES_CSV_PATH = 'all_nodes.csv'  # Original features for nodes
 COORDS_CSV_PATH = 'precalculated_coordinates.csv'  # Pre-calculated coordinates
 EDGES_CSV_PATH = 'all_edges.csv'  # Edges between nodes (source, target)
-WEIGHT_OPTIONS = [10, 100, 1000]  # Fixed weight options
+WEIGHT_OPTIONS = [100, 200, 400]  # Fixed weight options
 
 # Highlighting and plot aesthetics
 MAX_CATEGORIES_TO_HIGHLIGHT = 5  # CHANGED: Allow up to 5 categories
