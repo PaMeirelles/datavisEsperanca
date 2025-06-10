@@ -13,7 +13,7 @@ EDGES_CSV_PATH = 'all_edges.csv'  # Edges between nodes (source, target)
 WEIGHT_OPTIONS = [10, 100, 1000]  # Fixed weight options
 
 # Highlighting and plot aesthetics
-MAX_CATEGORIES_TO_HIGHLIGHT = 3
+MAX_CATEGORIES_TO_HIGHLIGHT = 5  # CHANGED: Allow up to 5 categories
 HIGHLIGHT_COLORS = px.colors.qualitative.Plotly[:MAX_CATEGORIES_TO_HIGHLIGHT]
 DEFAULT_POINT_COLOR = 'lightgrey'
 HIGHLIGHT_POINT_SIZE = 6
@@ -102,7 +102,8 @@ app.layout = html.Div(
                      html.Div(className="control-row", style={'marginBottom': '15px'}, children=[
                          html.Div(id='category-selector-div', style={'display': 'none', 'width': '100%'}, children=[
                              html.Label(id='category-select-label',
-                                        children="Select Categories to Highlight (up to 3):",
+                                        # CHANGED: Updated label to reflect new 5 category limit
+                                        children=f"Select Categories to Highlight (up to {MAX_CATEGORIES_TO_HIGHLIGHT}):",
                                         style={'fontWeight': 'bold', 'display': 'block', 'marginBottom': '5px'}),
                              dcc.Dropdown(id='category-select-dropdown', placeholder="Select categories...", multi=True,
                                           clearable=True)
@@ -136,10 +137,10 @@ app.layout = html.Div(
 )
 def update_category_selector(selected_feature, df_json):
     if not selected_feature or df_json is None:
-        return {'display': 'none'}, [], [], "Select Categories to Highlight (up to 3):"
+        return {'display': 'none'}, [], [], f"Select Categories to Highlight (up to {MAX_CATEGORIES_TO_HIGHLIGHT}):"
     df = pd.read_json(df_json, orient='split')
     if selected_feature not in df.columns:
-        return {'display': 'none'}, [], [], "Select Categories to Highlight (up to 3):"
+        return {'display': 'none'}, [], [], f"Select Categories to Highlight (up to {MAX_CATEGORIES_TO_HIGHLIGHT}):"
     if pd.api.types.is_object_dtype(df[selected_feature]) or pd.api.types.is_categorical_dtype(df[selected_feature]):
         unique_categories = df[selected_feature].astype(str).fillna('Unknown').unique()
         if 'age_group' in selected_feature.lower():
@@ -183,7 +184,7 @@ def generate_plot_from_precalculated(n_clicks, df_json, highlight_feature, selec
 
     # --- Generate Edge Shapes ---
     edge_shapes = []
-    # Use 'source' and 'target' as column names, adjust if your file uses different names
+    # Use 'id1' and 'id2' as column names, adjust if your file uses different names
     if 'id1' in EDGES_DF.columns and 'id2' in EDGES_DF.columns:
         coords_for_edges = plot_df[['id', 't-SNE_1', 't-SNE_2']]
         edges_temp = pd.merge(EDGES_DF, coords_for_edges, left_on='id1', right_on='id', how='inner')
@@ -197,7 +198,7 @@ def generate_plot_from_precalculated(n_clicks, df_json, highlight_feature, selec
                                         line=dict(color=EDGE_COLOR, width=EDGE_WIDTH)),
             axis=1
         ).tolist()
-    print(edge_shapes)
+
     # --- Prepare for plotting (coloring, sizing, etc.) ---
     fig_title = f't-SNE Visualization with weight on <b>{highlight_feature}</b> (Weight: {weight}x)'
     plot_df['display_color_group'] = 'Other Points'
@@ -232,15 +233,24 @@ def generate_plot_from_precalculated(n_clicks, df_json, highlight_feature, selec
 
     # --- Update Layout with Edges and Square Aspect Ratio ---
     fig.update_layout(
-        shapes=edge_shapes,  # Add the lines for the edges here
+        shapes=edge_shapes,
         margin=dict(l=20, r=20, t=100, b=20),
         height=700,
-        xaxis_title="t-SNE Component 1",
-        yaxis_title="t-SNE Component 2",
-        plot_bgcolor='white', paper_bgcolor='white', font_color='#333',
+        plot_bgcolor='white',
+        paper_bgcolor='white',
+        font_color='#333',
         legend_title_text='Highlighted Categories',
-        xaxis=dict(showgrid=True, gridcolor='#e5e5e5'),
-        yaxis=dict(showgrid=True, gridcolor='#e5e5e5', scaleanchor="x", scaleratio=1)
+        # CHANGED: The entire axis configuration is updated to hide titles and labels
+        xaxis=dict(
+            visible=False, # Hide axis line, ticks, and labels
+            showgrid=False # Hide grid lines
+        ),
+        yaxis=dict(
+            visible=False,
+            showgrid=False,
+            scaleanchor="x", # Keep for square aspect ratio
+            scaleratio=1     # Keep for square aspect ratio
+        )
     )
     fig.update_traces(marker=dict(opacity=0.8, line=dict(width=0.5, color='DarkSlateGrey')))
 

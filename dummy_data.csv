@@ -1,0 +1,101 @@
+id,file,education,gender,siglaUf,siglaPartido,region,occupation,ethnicity,age_group
+1,file1.txt,High School,Other,BA,PSOL,Midwest,Engineer,Black,18-25
+2,file2.txt,Bachelor,Other,SP,MDB,North,Artist,Asian,56+
+3,file3.txt,Bachelor,Male,RJ,MDB,Northeast,Doctor,Mixed,56+
+4,file4.txt,Bachelor,Other,SP,PSOL,Midwest,Doctor,Mixed,26-35
+5,file5.txt,Master,Other,MG,PT,North,Teacher,Black,56+
+6,file6.txt,PhD,Male,RJ,PSDB,Northeast,Teacher,Indigenous,18-25
+7,file7.txt,High School,Male,BA,PT,South,Teacher,Mixed,56+
+8,file8.txt,Master,Female,RJ,PT,Southeast,Teacher,Black,36-45
+9,file9.txt,Master,Other,RJ,PT,Southeast,Teacher,Black,56+
+10,file10.txt,High School,Male,SP,PSOL,North,Teacher,Indigenous,18-25
+11,file11.txt,High School,Male,SP,PSOL,Northeast,Engineer,Asian,36-45
+12,file12.txt,Bachelor,Male,RJ,PSDB,South,Artist,Mixed,56+
+13,file13.txt,PhD,Other,SP,PSOL,Midwest,Engineer,Mixed,46-55
+14,file14.txt,Bachelor,Male,SP,PSDB,Southeast,Artist,White,56+
+15,file15.txt,Master,Other,BA,MDB,Midwest,Artist,Black,18-25
+16,file16.txt,Master,Other,SP,PSOL,Northeast,Engineer,Black,18-25
+17,file17.txt,Master,Female,BA,PT,Northeast,Artist,Mixed,36-45
+18,file18.txt,High School,Other,SP,MDB,Northeast,Doctor,Mixed,56+
+19,file19.txt,Master,Other,BA,PT,Southeast,Doctor,Indigenous,36-45
+20,file20.txt,Bachelor,Other,BA,PT,North,Teacher,Mixed,36-45
+21,file21.txt,High School,Female,SP,MDB,South,Engineer,Indigenous,46-55
+22,file22.txt,PhD,Female,SP,PT,Southeast,Doctor,Black,18-25
+23,file23.txt,Master,Other,RJ,MDB,Northeast,Engineer,White,36-45
+24,file24.txt,PhD,Other,RJ,PT,South,Engineer,Asian,46-55
+25,file25.txt,PhD,Female,RJ,PSDB,Midwest,Teacher,Asian,46-55
+26,file26.txt,PhD,Female,BA,PT,North,Engineer,Black,18-25
+27,file27.txt,High School,Other,BA,PSOL,North,Doctor,White,18-25
+28,file28.txt,High School,Other,BA,MDB,South,Artist,Black,46-55
+29,file29.txt,Bachelor,Male,MG,PT,Southeast,Engineer,White,46-55
+30,file30.txt,Bachelor,Other,MG,PT,Northeast,Teacher,Asian,36-45
+31,file31.txt,Master,Other,RJ,PSOL,Northeast,Teacher,White,56+
+32,file32.txt,Master,Other,SP,PT,South,Teacher,Asian,56+
+33,file33.txt,High School,Male,BA,PSDB,Northeast,Teacher,White,26-35
+34,file34.txt,Master,Male,BA,PSDB,Midwest,Teacher,White,26-35
+35,file35.txt,High School,Other,SP,PT,Northeast,Teacher,Mixed,36-45
+36,file36.txt,High School,Female,MG,PSDB,South,Teacher,White,26-35
+37,file37.txt,PhD,Other,MG,PSDB,Midwest,Doctor,Mixed,18-25
+38,file38.txt,Bachelor,Male,SP,PSDB,Northeast,Engineer,Indigenous,26-35
+39,file39.txt,Master,Other,BA,PSDB,Midwest,Teacher,Mixed,36-45
+40,file40.txt,PhD,Male,RJ,PT,North,Artist,Indigenous,18-25
+41,file41.txt,Master,Female,RJ,PSDB,Midwest,Teacher,Mixed,26-35
+42,file42.txt,High School,Other,BA,PSOL,South,Teacher,Indigenous,56+
+43,file43.txt,High School,Male,SP,PSDB,South,Doctor,Black,18-25
+44,file44.txt,Bachelor,Female,SP,PT,Midwest,Artist,Asian,56+
+45,file45.txt,Bachelor,Female,SP,PT,Southeast,Teacher,White,26-35
+46,file46.txt,Master,Other,RJ,MDB,Midwest,Artist,White,18-25
+47,file47.txt,High School,Other,RJ,PSDB,Northeast,Teacher,Asian,18-25
+48,file48.txt,High School,Other,MG,MDB,Midwest,Doctor,White,26-35
+49,file49.txt,Master,Female,SP,PT,Northeast,Teacher,Mixed,36-45
+50,file50.txt,High School,Male,RJ,MDB,North,Artist,White,26-35
+51,file51.txt,PhD,Other,SP,PSDB,Northeast,Teacher,Black,46-55
+52,file52.txt,Master,Female,BA,PSDB,Midwest,Teacher,Black,56+
+53,file53.txt,Master,Female,RJ,MDB,Northeast,Teacher,Asian,36-45
+54,file54.txt,PhD,Other,SP,PSDB,Southeast,Doctor,Indigenous,18-25
+55,file55.txt,High School,Female,BA,PSOL,South,Doctor,Indigenous,46-55
+56,file56.txt,PhD,Female,BA,MDB,Midwest,Artist,Indigenous,36-45
+57,file57.txt,PhD,Female,MG,MDB,Northeast,Engineer,White,26-35
+58,file58.txt,PhD,Female,SP,PT,South,Artist,Mixed,56+
+59,file59.txt,Bachelor,Female,MG,PT,South,Teacher,Indigenous,56+
+60,file60.txt,PhD,Other,SP,MDB,Northeast,Teacher,Black,18-25
+61,file61.txt,Master,Male,SP,MDB,South,Artist,Black,26-35
+62,file62.txt,Bachelor,Female,BA,PSOL,South,Artist,White,26-35
+63,file63.txt,High School,Female,BA,PSDB,South,Teacher,Indigenous,46-55
+64,file64.txt,Master,Male,BA,PT,Midwest,Doctor,Asian,36-45
+65,file65.txt,Bachelor,Male,RJ,PSDB,South,Engineer,Black,26-35
+66,file66.txt,Master,Female,SP,PSOL,Northeast,Teacher,Black,26-35
+67,file67.txt,Bachelor,Other,MG,PSDB,South,Artist,White,56+
+68,file68.txt,Bachelor,Female,SP,MDB,Southeast,Teacher,White,46-55
+69,file69.txt,Bachelor,Other,MG,PSDB,Southeast,Doctor,Asian,56+
+70,file70.txt,Master,Female,BA,PT,Midwest,Engineer,Asian,46-55
+71,file71.txt,Master,Female,RJ,MDB,Northeast,Teacher,White,56+
+72,file72.txt,PhD,Other,BA,PT,Northeast,Doctor,White,26-35
+73,file73.txt,Bachelor,Other,SP,PT,Midwest,Doctor,Black,26-35
+74,file74.txt,Bachelor,Female,RJ,PSDB,South,Doctor,Mixed,26-35
+75,file75.txt,Bachelor,Female,RJ,PSDB,North,Doctor,Mixed,26-35
+76,file76.txt,High School,Female,MG,PT,Northeast,Doctor,Black,36-45
+77,file77.txt,PhD,Female,MG,MDB,Northeast,Teacher,White,56+
+78,file78.txt,PhD,Male,BA,PT,Southeast,Doctor,Indigenous,18-25
+79,file79.txt,Master,Male,BA,PT,South,Engineer,Mixed,18-25
+80,file80.txt,Master,Other,RJ,PSDB,Northeast,Teacher,Asian,36-45
+81,file81.txt,PhD,Male,MG,PT,South,Teacher,Asian,46-55
+82,file82.txt,Bachelor,Female,BA,PSOL,North,Engineer,Asian,26-35
+83,file83.txt,High School,Male,MG,PSDB,Midwest,Doctor,Indigenous,18-25
+84,file84.txt,Bachelor,Other,MG,PSOL,South,Artist,White,46-55
+85,file85.txt,PhD,Female,MG,PSDB,Midwest,Engineer,Black,46-55
+86,file86.txt,Bachelor,Female,MG,PSOL,South,Teacher,Indigenous,56+
+87,file87.txt,PhD,Female,MG,PSDB,North,Doctor,Black,18-25
+88,file88.txt,PhD,Male,BA,MDB,Southeast,Artist,Black,18-25
+89,file89.txt,High School,Female,BA,PSOL,Midwest,Engineer,Asian,36-45
+90,file90.txt,Master,Female,SP,MDB,North,Doctor,Asian,26-35
+91,file91.txt,Master,Female,MG,PSDB,Southeast,Doctor,Mixed,36-45
+92,file92.txt,High School,Male,SP,PSDB,South,Artist,White,36-45
+93,file93.txt,High School,Female,BA,PSOL,South,Artist,Indigenous,26-35
+94,file94.txt,High School,Other,RJ,MDB,Northeast,Teacher,White,18-25
+95,file95.txt,Bachelor,Female,MG,MDB,Southeast,Teacher,White,26-35
+96,file96.txt,High School,Female,MG,PSOL,Southeast,Engineer,White,26-35
+97,file97.txt,High School,Female,RJ,PT,Midwest,Artist,Indigenous,26-35
+98,file98.txt,Bachelor,Other,BA,PT,Southeast,Artist,Indigenous,26-35
+99,file99.txt,High School,Female,MG,PT,Southeast,Engineer,Asian,26-35
+100,file100.txt,Bachelor,Other,BA,PT,Midwest,Artist,Mixed,56+

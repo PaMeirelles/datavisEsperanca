@@ -1,0 +1,101 @@
+id,file,education,gender,siglaUf,siglaPartido,region,occupation,ethnicity,age_group,income_level,satisfaction_score
+1,file1.txt,Master,Male,RJ,MDB,Midwest,Engineer,Asian,26-35,2,4.662286084025107
+2,file2.txt,Master,Female,RS,MDB,South,Teacher,Asian,26-35,1,7.872744865874587
+3,file3.txt,PhD,Male,BA,PT,South,Doctor,White,18-25,5,0.17679442796466938
+4,file4.txt,High School,Other,BA,PT,Northeast,Student,Indigenous,36-45,5,3.7339196545664888
+5,file5.txt,Master,Female,BA,PT,Southeast,Teacher,White,26-35,1,1.0491119722810327
+6,file6.txt,Bachelor,Male,SP,NOVO,South,Artist,Indigenous,56+,4,2.1503993591910775
+7,file7.txt,PhD,Other,BA,PSOL,South,Engineer,White,36-45,3,8.934309586983757
+8,file8.txt,High School,Other,MG,MDB,Southeast,Doctor,Mixed,46-55,2,7.078282612432848
+9,file9.txt,Bachelor,Female,SP,PT,Midwest,Artist,White,36-45,4,9.372802053134937
+10,file10.txt,Bachelor,Male,BA,PSOL,Northeast,Teacher,Asian,46-55,5,6.906164514943123
+11,file11.txt,Bachelor,Other,RJ,PSDB,Midwest,Teacher,Indigenous,36-45,4,0.49976177369029373
+12,file12.txt,Master,Female,BA,PSOL,Midwest,Student,White,18-25,3,3.3773647760533034
+13,file13.txt,Bachelor,Female,BA,PSOL,Northeast,Student,Indigenous,18-25,4,8.763198430373668
+14,file14.txt,Master,Male,BA,PSOL,North,Engineer,Indigenous,56+,3,3.4938478248036953
+15,file15.txt,Master,Male,BA,MDB,Southeast,Teacher,Asian,46-55,1,6.439341249639909
+16,file16.txt,Bachelor,Other,SP,PT,Northeast,Teacher,Mixed,18-25,1,6.387041468239993
+17,file17.txt,High School,Male,MG,MDB,Midwest,Teacher,Mixed,18-25,2,8.626648562674148
+18,file18.txt,High School,Other,MG,PSOL,Northeast,Artist,Mixed,56+,2,4.974173274947802
+19,file19.txt,Master,Male,RS,PSOL,North,Student,Indigenous,36-45,3,1.1177635996521151
+20,file20.txt,Bachelor,Female,BA,PSDB,South,Artist,Mixed,26-35,3,3.578301911126933
+21,file21.txt,High School,Male,BA,PSOL,Midwest,Teacher,White,56+,5,4.046913777209435
+22,file22.txt,PhD,Female,SP,PSDB,Northeast,Teacher,Asian,18-25,5,3.218655842510736
+23,file23.txt,Bachelor,Male,SP,PT,South,Teacher,Black,46-55,5,6.930823419466286
+24,file24.txt,PhD,Female,RJ,NOVO,Southeast,Artist,Asian,56+,5,6.454202398713792
+25,file25.txt,High School,Male,RJ,PT,South,Teacher,Mixed,56+,2,1.7557710390426728
+26,file26.txt,PhD,Male,MG,PT,Southeast,Artist,Black,36-45,1,1.2013690363019736
+27,file27.txt,PhD,Other,RS,PSOL,Southeast,Engineer,Black,56+,4,6.942930182708738
+28,file28.txt,Master,Female,RJ,NOVO,North,Engineer,Mixed,46-55,3,4.245946792262164
+29,file29.txt,Bachelor,Other,RJ,MDB,Midwest,Artist,Mixed,26-35,5,2.5127764282745435
+30,file30.txt,Master,Other,MG,PSOL,South,Teacher,Asian,46-55,2,8.308167237383296
+31,file31.txt,Master,Other,RJ,PT,Midwest,Doctor,Indigenous,46-55,4,3.6506124588320743
+32,file32.txt,Master,Other,BA,MDB,Northeast,Doctor,Indigenous,46-55,2,0.7385932464038414
+33,file33.txt,Master,Male,SP,MDB,South,Artist,Black,26-35,2,4.172252166108622
+34,file34.txt,Bachelor,Male,BA,PT,Northeast,Student,Mixed,46-55,1,7.187615678794195
+35,file35.txt,Master,Male,BA,MDB,Midwest,Student,White,18-25,1,3.444654055868117
+36,file36.txt,High School,Female,RJ,PSDB,North,Teacher,Mixed,18-25,2,9.892244120033896
+37,file37.txt,High School,Other,RJ,NOVO,Southeast,Doctor,White,36-45,2,1.5645712044873439
+38,file38.txt,High School,Female,MG,NOVO,South,Student,Asian,56+,3,0.8126635779750169
+39,file39.txt,Master,Other,BA,PSOL,North,Teacher,Black,46-55,5,2.1078977085642405
+40,file40.txt,PhD,Other,BA,PSDB,Midwest,Artist,Asian,46-55,5,6.544795910276051
+41,file41.txt,High School,Other,SP,PT,South,Artist,Black,56+,4,2.6576205331116496
+42,file42.txt,High School,Female,BA,NOVO,Northeast,Artist,Indigenous,56+,2,2.3698362770193504
+43,file43.txt,High School,Male,BA,MDB,Midwest,Artist,White,26-35,2,5.248247421844937
+44,file44.txt,Bachelor,Female,BA,NOVO,Southeast,Doctor,Asian,56+,1,4.155418849981528
+45,file45.txt,High School,Female,MG,PSOL,Midwest,Artist,Mixed,46-55,2,4.708554077356273
+46,file46.txt,Master,Other,BA,PSDB,Southeast,Artist,Black,56+,4,8.502014042986858
+47,file47.txt,PhD,Male,BA,MDB,Northeast,Artist,Indigenous,36-45,5,8.399032523414206
+48,file48.txt,Master,Other,MG,NOVO,Northeast,Teacher,Indigenous,56+,2,0.00947542398031076
+49,file49.txt,Bachelor,Female,RS,PT,North,Engineer,Black,26-35,3,7.686408977722673
+50,file50.txt,Bachelor,Male,RS,NOVO,Midwest,Teacher,Mixed,18-25,3,2.701423762843962
+51,file51.txt,High School,Female,SP,MDB,South,Engineer,Mixed,36-45,4,9.72046045554003
+52,file52.txt,Master,Female,RJ,MDB,Southeast,Artist,Mixed,56+,3,0.7586780780796254
+53,file53.txt,High School,Female,SP,MDB,Northeast,Artist,Asian,46-55,2,7.203771788817226
+54,file54.txt,Bachelor,Other,BA,MDB,Northeast,Engineer,Mixed,18-25,3,9.501535994780308
+55,file55.txt,High School,Male,RS,PSDB,North,Doctor,Mixed,26-35,4,1.8770501190604327
+56,file56.txt,Master,Other,RS,NOVO,Northeast,Doctor,Black,46-55,1,8.482484107399756
+57,file57.txt,High School,Other,SP,PT,Midwest,Teacher,Mixed,18-25,1,0.1746614856624129
+58,file58.txt,PhD,Male,SP,PSOL,North,Student,Mixed,36-45,4,1.2979554925748271
+59,file59.txt,Master,Other,SP,NOVO,Midwest,Doctor,White,26-35,3,4.178310271766479
+60,file60.txt,Bachelor,Female,RJ,PSOL,Midwest,Engineer,Mixed,18-25,5,7.42935692782467
+61,file61.txt,High School,Female,BA,PSOL,North,Teacher,White,18-25,2,9.319612830417498
+62,file62.txt,High School,Female,MG,NOVO,Southeast,Engineer,Black,18-25,2,6.625998129438932
+63,file63.txt,Master,Other,BA,PT,North,Engineer,Asian,56+,3,6.10895012457876
+64,file64.txt,PhD,Male,MG,PSDB,South,Teacher,Indigenous,18-25,3,7.301989706904434
+65,file65.txt,Bachelor,Male,RS,NOVO,Southeast,Engineer,Indigenous,18-25,2,0.9385821854349219
+66,file66.txt,PhD,Other,MG,PSDB,Southeast,Teacher,Mixed,46-55,2,5.281696867294676
+67,file67.txt,PhD,Female,RS,PT,South,Artist,Indigenous,18-25,5,0.46708995461239633
+68,file68.txt,Master,Female,BA,PSDB,South,Doctor,Mixed,18-25,3,8.341148802584044
+69,file69.txt,High School,Other,SP,PT,Midwest,Engineer,Mixed,36-45,2,1.508405202714933
+70,file70.txt,Bachelor,Male,RS,MDB,Midwest,Teacher,White,46-55,1,6.268451920238407
+71,file71.txt,PhD,Male,SP,NOVO,Northeast,Student,Asian,46-55,1,4.194563789163615
+72,file72.txt,Master,Female,MG,MDB,Midwest,Artist,White,26-35,1,1.9827066628255352
+73,file73.txt,Master,Other,MG,NOVO,Southeast,Teacher,Mixed,56+,4,5.330764477538269
+74,file74.txt,Bachelor,Female,MG,MDB,Northeast,Doctor,Indigenous,18-25,3,2.7230003397120073
+75,file75.txt,PhD,Female,SP,PSOL,South,Teacher,White,26-35,3,0.6379604619682411
+76,file76.txt,Bachelor,Male,BA,PSOL,South,Student,Mixed,18-25,3,2.295178729034916
+77,file77.txt,Master,Male,BA,NOVO,Northeast,Student,White,36-45,3,5.350050667227029
+78,file78.txt,High School,Female,BA,PT,South,Doctor,Mixed,46-55,3,7.704825494974212
+79,file79.txt,PhD,Other,RS,MDB,Southeast,Teacher,Mixed,18-25,1,1.3363416426855024
+80,file80.txt,Master,Male,SP,PT,Northeast,Teacher,Black,56+,4,0.29943722777582393
+81,file81.txt,Bachelor,Other,RS,PSDB,South,Engineer,Mixed,46-55,1,6.5491331803540636
+82,file82.txt,High School,Other,MG,PSOL,North,Engineer,Asian,18-25,1,6.246625037089137
+83,file83.txt,Bachelor,Other,BA,PSDB,Southeast,Student,Black,26-35,1,5.9121050046546735
+84,file84.txt,PhD,Female,RS,MDB,North,Teacher,White,36-45,3,8.936757944933163
+85,file85.txt,Bachelor,Male,BA,MDB,Midwest,Doctor,White,46-55,3,8.146073483976261
+86,file86.txt,Bachelor,Female,MG,NOVO,South,Engineer,Asian,36-45,2,5.902899163083102
+87,file87.txt,Master,Male,SP,PSDB,North,Teacher,Indigenous,56+,4,0.13798925052874056
+88,file88.txt,High School,Male,MG,NOVO,Southeast,Artist,Asian,26-35,1,8.335411945573357
+89,file89.txt,High School,Male,BA,NOVO,Southeast,Artist,Mixed,36-45,5,8.370790497899833
+90,file90.txt,PhD,Female,RJ,PSDB,North,Artist,Black,46-55,3,5.617525091779292
+91,file91.txt,Master,Other,RS,PT,North,Doctor,Black,56+,1,7.88380196962704
+92,file92.txt,Master,Male,RS,PSOL,Midwest,Engineer,Asian,36-45,3,4.132115147390431
+93,file93.txt,Master,Other,RJ,PSOL,North,Artist,Asian,18-25,4,0.17458010228634357
+94,file94.txt,High School,Female,RJ,MDB,Northeast,Student,Black,26-35,1,8.462255759312
+95,file95.txt,PhD,Female,MG,PSDB,South,Teacher,Mixed,46-55,1,9.233162492634165
+96,file96.txt,Bachelor,Female,RJ,PT,Northeast,Teacher,Mixed,36-45,2,8.934052196315331
+97,file97.txt,PhD,Female,MG,PT,Midwest,Doctor,Mixed,26-35,2,2.5559937265675803
+98,file98.txt,Master,Other,MG,PSOL,Southeast,Doctor,Black,46-55,2,8.477393999135604
+99,file99.txt,Bachelor,Male,SP,PT,North,Doctor,Mixed,56+,4,0.8297686668899673
+100,file100.txt,Bachelor,Female,MG,PSDB,Midwest,Engineer,Black,26-35,2,5.569041462592571
