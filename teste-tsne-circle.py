@@ -80,7 +80,7 @@ def run_precalculation():
     Saves results incrementally to allow for interruption and resumption.
     """
     # --- Configuration ---
-    SAMPLE_FRACTION = 1
+    SAMPLE_FRACTION = .05
     WEIGHT_VALUES = [100.0, 200.0, 400.0]
     INPUT_FILENAME = 'all_nodes.csv'
     OUTPUT_FILENAME = 'precalculated_coordinates.csv'
