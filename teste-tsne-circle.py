@@ -1,9 +1,10 @@
 import pandas as pd
 import numpy as np
 from sklearn.metrics import pairwise_distances
-from scipy.optimize import minimize
+# Removed scipy.optimize as it's no longer needed
 import time
 import os
+import math
 
 
 # --- Helper Functions from the original script (unchanged) ---
@@ -31,10 +32,7 @@ def preprocess_and_calculate_distances(df, weighted_feature=None, weight_value=1
     df_encoded = pd.get_dummies(df_features, columns=categorical_cols)
 
     if weighted_feature:
-        # A small print statement here is useful for monitoring
-        # print(f"Applying weight {weight_value} to the '{weighted_feature}' feature...")
         for col in df_encoded.columns:
-            # Apply weight to all one-hot encoded columns derived from the feature
             if col.startswith(weighted_feature):
                 df_encoded[col] *= weight_value
 
@@ -62,6 +60,7 @@ def create_warm_start_angles(df_processed, warm_start_category, spread_radians=0
 def circular_objective_function(angles, distance_matrix):
     """
     Objective function: Minimize the difference between circular distance and feature distance.
+    (This is the function we will give to the heuristic optimizer).
     """
     max_dist = np.max(distance_matrix)
     norm_dist_atr = distance_matrix / max_dist if max_dist > 0 else distance_matrix
@@ -72,20 +71,66 @@ def circular_objective_function(angles, distance_matrix):
     return np.sum(np.triu(squared_diff, 1))
 
 
-# --- Main Pre-calculation Logic ---
+# --- MODIFICATION: New Heuristic Optimizer ---
 
-def run_precalculation():
+def simulated_annealing_optimizer(objective_func, initial_angles, distance_matrix, n_iterations, initial_temp,
+                                  cooling_rate):
     """
-    Main function to run the analysis for all features and weights.
-    Saves results incrementally to allow for interruption and resumption.
+    Approximates the best arrangement of angles using Simulated Annealing.
+    """
+    current_solution = np.copy(initial_angles)
+    current_cost = objective_func(current_solution, distance_matrix)
+
+    best_solution = np.copy(current_solution)
+    best_cost = current_cost
+
+    temp = initial_temp
+    n_points = len(initial_angles)
+
+    for i in range(n_iterations):
+        # Propose a random change to a single point's angle
+        candidate = np.copy(current_solution)
+        idx_to_change = np.random.randint(0, n_points)
+        # Nudge the angle by a value from a normal distribution; scale by temp
+        nudge = np.random.normal(0, 0.5 * (temp / initial_temp) + 0.01)
+        candidate[idx_to_change] = (candidate[idx_to_change] + nudge) % (2 * np.pi)
+
+        candidate_cost = objective_func(candidate, distance_matrix)
+
+        # Decide whether to accept the new solution
+        cost_diff = candidate_cost - current_cost
+        if cost_diff < 0 or np.random.rand() < math.exp(-cost_diff / temp):
+            current_solution = candidate
+            current_cost = candidate_cost
+
+            # Update the best solution found so far
+            if current_cost < best_cost:
+                best_solution = current_solution
+                best_cost = current_cost
+
+        # Cool down the temperature
+        temp *= cooling_rate
+
+        # Optional: Print progress for long runs
+        # if i % (n_iterations // 10) == 0:
+        #     print(f"  Iter {i}/{n_iterations}, Temp: {temp:.2f}, Cost: {best_cost:.2f}")
+
+    return {'x': best_solution, 'success': True, 'message': f'SA finished after {n_iterations} iterations.'}
+
+
+# --- Main Pre-calculation Logic (Modified to use the Heuristic) ---
+
+def run_precalculation_heuristic():
+    """
+    Main function to run the analysis using Simulated Annealing.
     """
     # --- Configuration ---
-    SAMPLE_FRACTION = .05
+    SAMPLE_FRACTION = .2
     WEIGHT_VALUES = [100.0, 200.0, 400.0]
     INPUT_FILENAME = 'all_nodes.csv'
-    OUTPUT_FILENAME = 'precalculated_coordinates.csv'
+    OUTPUT_FILENAME = 'precalculated_coordinates_3.csv'  # Use a new output file
 
-    print("--- Starting Pre-calculation ---")
+    print("--- Starting Pre-calculation with Simulated Annealing Heuristic ---")
 
     # --- Load and Sample Data ---
     try:
@@ -101,7 +146,6 @@ def run_precalculation():
     feature_columns = [col for col in df_sample.columns if col not in ['id', 'file']]
     print(f"Identified features for analysis: {feature_columns}\n")
 
-    # --- MODIFICATION 1: Check for existing results to avoid re-calculating ---
     completed_runs = set()
     if os.path.exists(OUTPUT_FILENAME):
         print(f"Found existing results file: '{OUTPUT_FILENAME}'. Reading to prevent re-work.")
@@ -119,7 +163,6 @@ def run_precalculation():
             current_run_number += 1
             print(f"--- Preparing Analysis {current_run_number}/{total_runs} ---")
 
-            # --- MODIFICATION 2: Skip this loop iteration if the result already exists ---
             if (feature, weight) in completed_runs:
                 print(f"Skipping: Feature '{feature}', Weight {weight} already calculated.\n")
                 continue
@@ -128,26 +171,26 @@ def run_precalculation():
             start_time = time.time()
 
             distance_matrix = preprocess_and_calculate_distances(
-                df=df_sample,
-                weighted_feature=feature,
-                weight_value=weight
+                df=df_sample, weighted_feature=feature, weight_value=weight
             )
             initial_angles = create_warm_start_angles(
-                df_processed=df_sample,
-                warm_start_category=feature,
-                spread_radians=0.1
-            )
-            result = minimize(
-                fun=circular_objective_function,
-                x0=initial_angles,
-                args=(distance_matrix,),
-                method='L-BFGS-B',
-                bounds=[(0, 2 * np.pi)] * len(df_sample),
-                options={'disp': False, 'maxiter': 5000}
+                df_processed=df_sample, warm_start_category=feature, spread_radians=0.5
             )
 
-            if result.success:
-                final_angles = result.x
+            # ## <<< MODIFICATION: Use Simulated Annealing instead of L-BFGS-B >>>
+            # These parameters control the speed vs. quality trade-off.
+            # Lower iterations = faster. Higher temperature = more exploration.
+            result = simulated_annealing_optimizer(
+                objective_func=circular_objective_function,
+                initial_angles=initial_angles,
+                distance_matrix=distance_matrix,
+                n_iterations=50,  # MAIN SPEED CONTROL: Lower for faster, rougher results.
+                initial_temp=50.0,  # How much to explore initially.
+                cooling_rate=0.998  # How quickly to "settle down".
+            )
+
+            if result['success']:
+                final_angles = result['x']
                 radius = 1.0
                 x_coords = radius * np.cos(final_angles)
                 y_coords = radius * np.sin(final_angles)
@@ -160,19 +203,16 @@ def run_precalculation():
                     'y': y_coords
                 })
 
-                # --- MODIFICATION 3: Append results immediately to the CSV file ---
-                # Determine if the header should be written (only for the very first time)
                 write_header = not os.path.exists(OUTPUT_FILENAME)
-
                 run_results.to_csv(OUTPUT_FILENAME, mode='a', header=write_header, index=False)
 
-                print(f"SUCCESS: Results saved to '{OUTPUT_FILENAME}'.")
+                print(f"SUCCESS: {result['message']} Results saved to '{OUTPUT_FILENAME}'.")
                 print(f"Completed in {time.time() - start_time:.2f} seconds.\n")
-
             else:
-                print(f"Optimization failed for feature '{feature}' with weight {weight}.\n")
+                # This block is less likely to be hit with SA, but good practice.
+                print(f"Optimization FAILED for feature '{feature}' with weight {weight}.")
+                print(f"Reason: {result.message}\n")
 
-    # --- MODIFICATION 4: Final message is updated as saving is now incremental ---
     print(f"--- Pre-calculation process finished. ---")
     if os.path.exists(OUTPUT_FILENAME):
         print(f"All results are stored in '{OUTPUT_FILENAME}'.")
@@ -181,4 +221,4 @@ def run_precalculation():
 
 
 if __name__ == '__main__':
-    run_precalculation()
+    run_precalculation_heuristic()

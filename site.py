@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np  # Import numpy for faster operations
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
@@ -7,24 +8,22 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 # --- Configuration ---
-NODES_CSV_PATH = 'all_nodes.csv'  # Original features for nodes
-COORDS_CSV_PATH = 'precalculated_coordinates.csv'  # Pre-calculated coordinates
-EDGES_CSV_PATH = 'all_edges.csv'  # Edges between nodes (source, target)
-WEIGHT_OPTIONS = [100, 200, 400]  # Fixed weight options
+NODES_CSV_PATH = 'all_nodes.csv'
+COORDS_CSV_PATH = 'precalculated_coordinates_2.csv'
+EDGES_CSV_PATH = 'all_edges.csv'
+WEIGHT_OPTIONS = [100, 200, 400]
 
 # Highlighting and plot aesthetics
-MAX_CATEGORIES_TO_HIGHLIGHT = 5  # CHANGED: Allow up to 5 categories
+MAX_CATEGORIES_TO_HIGHLIGHT = 5
 HIGHLIGHT_COLORS = px.colors.qualitative.Plotly[:MAX_CATEGORIES_TO_HIGHLIGHT]
 DEFAULT_POINT_COLOR = 'lightgrey'
-HIGHLIGHT_POINT_SIZE = 6
-DEFAULT_POINT_SIZE = 3
-EDGE_COLOR = "rgba(100, 100, 100, 0.2)"  # Low alpha for edges
+HIGHLIGHT_POINT_SIZE = 8  # Slightly larger for WebGL
+DEFAULT_POINT_SIZE = 5  # Slightly larger for WebGL
+EDGE_COLOR = "rgba(100, 100, 100, 0.2)"
 EDGE_WIDTH = 0.5
 
 # Predefined order for 'age_group' or similar ordinal categories
-AGE_GROUP_ORDER = [
-    '0-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90',
-]
+AGE_GROUP_ORDER = ['0-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80-90']
 
 # --- Load Initial Data ---
 GLOBAL_DF = pd.DataFrame()
@@ -35,19 +34,15 @@ HIGHLIGHT_FEATURE_DROPDOWN_OPTIONS = []
 ORIGINAL_COLUMNS_FOR_HOVER = []
 
 try:
-    # Load node features, coordinates, and edges
     GLOBAL_DF = pd.read_csv(NODES_CSV_PATH)
     PRECALCULATED_DF = pd.read_csv(COORDS_CSV_PATH)
     EDGES_DF = pd.read_csv(EDGES_CSV_PATH)
-    # Prepare dropdown options for feature selection
+
     POTENTIAL_COLS_TO_DROP_FROM_SELECTION = ['id', 'file']
     AVAILABLE_COLS_FOR_HIGHLIGHT_FEATURE = [col for col in GLOBAL_DF.columns if
                                             col not in POTENTIAL_COLS_TO_DROP_FROM_SELECTION]
     HIGHLIGHT_FEATURE_DROPDOWN_OPTIONS = [{'label': col, 'value': col} for col in AVAILABLE_COLS_FOR_HIGHLIGHT_FEATURE]
-
-    # Prepare columns for the hover template
-    ORIGINAL_COLUMNS_FOR_HOVER = [col for col in GLOBAL_DF.columns if
-                                  col.lower() not in ['id', 'file']]
+    ORIGINAL_COLUMNS_FOR_HOVER = [col for col in GLOBAL_DF.columns if col.lower() not in ['id', 'file']]
 
 except FileNotFoundError as e:
     INITIAL_STATUS_MESSAGE = (f"Error: A required data file was not found. Please ensure "
@@ -71,6 +66,7 @@ app.layout = html.Div(
                         'fontWeight': 'bold', 'color': 'red', 'textAlign': 'center', 'padding': '10px',
                         'border': '1px solid #ddd', 'borderRadius': '5px', 'marginBottom': '20px'}),
 
+        # --- Controls Section (Unchanged) ---
         html.Div(className="controls-section",
                  style={'border': '1px solid #ddd', 'borderRadius': '5px', 'padding': '20px', 'marginBottom': '20px',
                         'backgroundColor': '#f9f9f9'},
@@ -102,7 +98,6 @@ app.layout = html.Div(
                      html.Div(className="control-row", style={'marginBottom': '15px'}, children=[
                          html.Div(id='category-selector-div', style={'display': 'none', 'width': '100%'}, children=[
                              html.Label(id='category-select-label',
-                                        # CHANGED: Updated label to reflect new 5 category limit
                                         children=f"Select Categories to Highlight (up to {MAX_CATEGORIES_TO_HIGHLIGHT}):",
                                         style={'fontWeight': 'bold', 'display': 'block', 'marginBottom': '5px'}),
                              dcc.Dropdown(id='category-select-dropdown', placeholder="Select categories...", multi=True,
@@ -122,25 +117,27 @@ app.layout = html.Div(
 
         html.Div(id='error-message-div', style={'color': 'red', 'marginTop': '10px', 'fontWeight': 'bold'}),
 
-        dcc.Store(id='stored-dataframe-json',
-                  data=GLOBAL_DF.to_json(date_format='iso', orient='split') if not GLOBAL_DF.empty else None),
+        # REMOVED: No longer storing the large dataframe in the browser. It's already in server memory.
+        # dcc.Store(id='stored-dataframe-json', data=GLOBAL_DF.to_json(...)),
         dcc.Store(id='stored-original-columns-for-hover', data=ORIGINAL_COLUMNS_FOR_HOVER)
     ])
 
 
-# --- Callback to update category selector based on chosen feature ---
+# --- Callback to update category selector (Unchanged, but now reads from global df) ---
 @app.callback(
     [Output('category-selector-div', 'style'), Output('category-select-dropdown', 'options'),
      Output('category-select-dropdown', 'value'), Output('category-select-label', 'children')],
-    [Input('highlight-feature-dropdown', 'value')],
-    [State('stored-dataframe-json', 'data')]
+    [Input('highlight-feature-dropdown', 'value')]
 )
-def update_category_selector(selected_feature, df_json):
-    if not selected_feature or df_json is None:
-        return {'display': 'none'}, [], [], f"Select Categories to Highlight (up to {MAX_CATEGORIES_TO_HIGHLIGHT}):"
-    df = pd.read_json(df_json, orient='split')
+def update_category_selector(selected_feature):
+    if not selected_feature:
+        raise PreventUpdate
+
+    df = GLOBAL_DF  # Read directly from global dataframe
+
     if selected_feature not in df.columns:
         return {'display': 'none'}, [], [], f"Select Categories to Highlight (up to {MAX_CATEGORIES_TO_HIGHLIGHT}):"
+
     if pd.api.types.is_object_dtype(df[selected_feature]) or pd.api.types.is_categorical_dtype(df[selected_feature]):
         unique_categories = df[selected_feature].astype(str).fillna('Unknown').unique()
         if 'age_group' in selected_feature.lower():
@@ -157,49 +154,58 @@ def update_category_selector(selected_feature, df_json):
         return {'display': 'block', 'width': '100%', 'marginBottom': '15px'}, [], [], label_text
 
 
-# --- Main callback to look up coordinates, add edges, and generate plot ---
+# --- Main callback to generate plot (HEAVILY REFACTORED FOR PERFORMANCE) ---
 @app.callback(
     [Output('tsne-scatter-plot', 'figure'), Output('error-message-div', 'children')],
     [Input('run-button', 'n_clicks')],
-    [State('stored-dataframe-json', 'data'), State('highlight-feature-dropdown', 'value'),
+    [State('highlight-feature-dropdown', 'value'),
      State('category-select-dropdown', 'value'), State('weight-selector', 'value'),
      State('stored-original-columns-for-hover', 'data')]
 )
-def generate_plot_from_precalculated(n_clicks, df_json, highlight_feature, selected_categories_to_highlight,
+def generate_plot_from_precalculated(n_clicks, highlight_feature, selected_categories_to_highlight,
                                      weight, original_columns_for_hover):
-    if n_clicks == 0: return go.Figure(), ""
+    if n_clicks == 0: raise PreventUpdate
     if any(df.empty for df in [GLOBAL_DF, PRECALCULATED_DF, EDGES_DF]):
         return go.Figure(), "Error: Data files are not loaded. Cannot generate plot."
-    if df_json is None: return go.Figure(), "Error: Stored data is missing."
     if not highlight_feature: return go.Figure(), "Error: Please select a feature to weight before running."
 
     coords_df = PRECALCULATED_DF[
         (PRECALCULATED_DF['weighted_feature'] == highlight_feature) & (PRECALCULATED_DF['weight'] == weight)]
     if coords_df.empty: return go.Figure(), f"Error: No pre-calculated coordinates found for '{highlight_feature}' with weight '{weight}x'."
 
-    df_full = pd.read_json(df_json, orient='split')
-    plot_df = pd.merge(df_full, coords_df[['id', 'x', 'y']], on='id', how='inner')
+    # Merge node features with the correct coordinates
+    plot_df = pd.merge(GLOBAL_DF, coords_df[['id', 'x', 'y']], on='id', how='inner')
     if plot_df.empty: return go.Figure(), "Error: Could not map coordinates to node data."
-    plot_df.rename(columns={'x': 't-SNE_1', 'y': 't-SNE_2'}, inplace=True)
+    plot_df.rename(columns={'x': 'tSNE_1', 'y': 'tSNE_2'}, inplace=True)
 
-    # --- Generate Edge Shapes ---
-    edge_shapes = []
-    # Use 'id1' and 'id2' as column names, adjust if your file uses different names
-    if 'id1' in EDGES_DF.columns and 'id2' in EDGES_DF.columns:
-        coords_for_edges = plot_df[['id', 't-SNE_1', 't-SNE_2']]
-        edges_temp = pd.merge(EDGES_DF, coords_for_edges, left_on='id1', right_on='id', how='inner')
-        edges_temp.rename(columns={'t-SNE_1': 'x0', 't-SNE_2': 'y0'}, inplace=True)
-        edges_with_coords = pd.merge(edges_temp.drop(columns=['id']), coords_for_edges, left_on='id2', right_on='id',
-                                     how='inner')
-        edges_with_coords.rename(columns={'t-SNE_1': 'x1', 't-SNE_2': 'y1'}, inplace=True)
+    # --- EFFICIENT Edge Trace Generation ---
+    # 1. Create a dictionary for fast coordinate lookup
+    id_to_coords = plot_df.set_index('id')[['tSNE_1', 'tSNE_2']].to_dict('index')
 
-        edge_shapes = edges_with_coords.apply(
-            lambda row: go.layout.Shape(type="line", layer="below", x0=row.x0, y0=row.y0, x1=row.x1, y1=row.y1,
-                                        line=dict(color=EDGE_COLOR, width=EDGE_WIDTH)),
-            axis=1
-        ).tolist()
+    # 2. Map start and end coordinates for all edges at once
+    # Ensure your edge file has columns like 'id1' and 'id2'
+    edges_subset = EDGES_DF[EDGES_DF['id1'].isin(id_to_coords) & EDGES_DF['id2'].isin(id_to_coords)].copy()
+    edges_subset['start_coords'] = edges_subset['id1'].map(id_to_coords)
+    edges_subset['end_coords'] = edges_subset['id2'].map(id_to_coords)
+    edges_subset.dropna(subset=['start_coords', 'end_coords'], inplace=True)
 
-    # --- Prepare for plotting (coloring, sizing, etc.) ---
+    # 3. Build the coordinate arrays for a single line trace
+    edge_x, edge_y = [], []
+    for index, row in edges_subset.iterrows():
+        x0, y0 = row['start_coords']['tSNE_1'], row['start_coords']['tSNE_2']
+        x1, y1 = row['end_coords']['tSNE_1'], row['end_coords']['tSNE_2']
+        edge_x.extend([x0, x1, None])  # Use None to break the line between edges
+        edge_y.extend([y0, y1, None])
+
+    edge_trace = go.Scattergl(
+        x=edge_x, y=edge_y,
+        mode='lines',
+        line=dict(color=EDGE_COLOR, width=EDGE_WIDTH),
+        hoverinfo='none',
+        showlegend=False
+    )
+
+    # --- Prepare Node Highlighting ---
     fig_title = f't-SNE Visualization with weight on <b>{highlight_feature}</b> (Weight: {weight}x)'
     plot_df['display_color_group'] = 'Other Points'
     plot_df['point_size_col'] = DEFAULT_POINT_SIZE
@@ -209,50 +215,48 @@ def generate_plot_from_precalculated(n_clicks, df_json, highlight_feature, selec
     if selected_categories_to_highlight and highlight_feature in plot_df.columns:
         actual_categories_to_highlight = selected_categories_to_highlight[:MAX_CATEGORIES_TO_HIGHLIGHT]
         feature_series_for_mask = plot_df[highlight_feature].astype(str)
+
+        # Sort selection for consistent legend ordering
         if 'age_group' in highlight_feature.lower():
             ordered_selection = [cat for cat in AGE_GROUP_ORDER if cat in actual_categories_to_highlight]
-            category_order_for_legend.extend(ordered_selection)
         else:
-            category_order_for_legend.extend(sorted(actual_categories_to_highlight))
-        for i, category_val in enumerate(actual_categories_to_highlight):
+            ordered_selection = sorted(actual_categories_to_highlight)
+
+        category_order_for_legend.extend(ordered_selection)
+
+        for i, category_val in enumerate(ordered_selection):
             mask = (feature_series_for_mask == str(category_val))
             plot_df.loc[mask, 'display_color_group'] = str(category_val)
             plot_df.loc[mask, 'point_size_col'] = HIGHLIGHT_POINT_SIZE
             color_discrete_map[str(category_val)] = HIGHLIGHT_COLORS[i % len(HIGHLIGHT_COLORS)]
         fig_title += f'<br>Highlighting: {", ".join(actual_categories_to_highlight)}'
 
-    hover_data_config = {col: True for col in original_columns_for_hover if col in plot_df.columns}
-    hover_data_config['point_size_col'] = False
-    hover_data_config['display_color_group'] = False
-
-    # --- Create the scatter plot ---
+    # --- Create the Main Scatter Plot using Plotly Express ---
     fig = px.scatter(
-        plot_df, x='t-SNE_1', y='t-SNE_2', color='display_color_group', size='point_size_col',
-        title=fig_title, hover_data=hover_data_config, color_discrete_map=color_discrete_map,
-        category_orders={'display_color_group': category_order_for_legend})
+        plot_df, x='tSNE_1', y='tSNE_2',
+        color='display_color_group',
+        size='point_size_col',
+        title=fig_title,
+        hover_data={col: True for col in original_columns_for_hover},
+        color_discrete_map=color_discrete_map,
+        category_orders={'display_color_group': category_order_for_legend},
+        render_mode='webgl'  # Use WebGL for faster rendering of points
+    )
 
-    # --- Update Layout with Edges and Square Aspect Ratio ---
+    # --- Combine the Edge Trace and the Scatter Plot ---
+    fig.add_trace(edge_trace)
+
     fig.update_layout(
-        shapes=edge_shapes,
         margin=dict(l=20, r=20, t=100, b=20),
         height=700,
         plot_bgcolor='white',
         paper_bgcolor='white',
         font_color='#333',
         legend_title_text='Highlighted Categories',
-        # CHANGED: The entire axis configuration is updated to hide titles and labels
-        xaxis=dict(
-            visible=False, # Hide axis line, ticks, and labels
-            showgrid=False # Hide grid lines
-        ),
-        yaxis=dict(
-            visible=False,
-            showgrid=False,
-            scaleanchor="x", # Keep for square aspect ratio
-            scaleratio=1     # Keep for square aspect ratio
-        )
+        xaxis=dict(visible=False, showgrid=False),
+        yaxis=dict(visible=False, showgrid=False, scaleanchor="x", scaleratio=1),
+        showlegend=True
     )
-    fig.update_traces(marker=dict(opacity=0.8, line=dict(width=0.5, color='DarkSlateGrey')))
 
     return fig, ""
 
